@@ -1,18 +1,23 @@
 package com.example.VirtualSchool;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.google.api.services.youtube.model.SearchResult;
 
-import antlr.collections.List;
+
 
 @Controller
 public class VSController {
+	
+	@Autowired
+	private YoutubeApiService ys;
+	
 	
 	@RequestMapping ("/")
 	public String showHome() {
@@ -27,9 +32,10 @@ public class VSController {
 	@RequestMapping ("/search")
 	public String searchVideos( Model model, String searchphrase) throws IOException {
 		
-		 Iterator<SearchResult> results= YoutubeApiService.searchResults(searchphrase);
+		 List<SearchResponse> results= ys.searchResults(searchphrase);
 		
 		 model.addAttribute("results", results);
+		 //System.out.println(results.toString());
 		return "videoresults";
 	}
 	

@@ -1,6 +1,7 @@
 package com.example.VirtualSchool;
 
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
@@ -18,16 +19,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.http.auth.AUTH;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import com.example.VirtualSchool.Search;
+
 
 
 
@@ -44,6 +50,21 @@ public class YoutubeApiService {
      private static final long NUMBER_OF_VIDEOS_RETURNED = 25;
 
 	  
+     
+     private RestTemplate rt;// parse JSon data and store in object
+
+		// initialization block that runs when a new instance of the class is created
+		// loaded before the constructor
+		{
+			ClientHttpRequestInterceptor interceptor = (request, body, execution) -> {
+				request.getHeaders().add(HttpHeaders.USER_AGENT, "anything");
+				return execution.execute(request, body);
+			};
+			rt = new RestTemplateBuilder().additionalInterceptors(interceptor).build();
+		}
+     
+     
+     
 	// private static YouTube youtube;
 
 	
@@ -63,7 +84,7 @@ public class YoutubeApiService {
      */
 
 
-	 public static Iterator<SearchResult> searchResults ( String QueryTerm) throws IOException {
+	 public List<SearchResponse> searchResults ( String QueryTerm) throws IOException {
     
 		 // This object is used to make YouTube Data API requests.
     YouTube youtube = new YouTube.Builder(Auth.HTTP_TRANSPORT, Auth.JSON_FACTORY, new HttpRequestInitializer() {
@@ -93,8 +114,32 @@ public class YoutubeApiService {
      // Call the API and print results.
       
     SearchListResponse searchResponse = search.execute();
-     List<SearchResult> searchResultList = searchResponse.getItems();
-     return (searchResultList.iterator());
+    List<SearchResult> searchResultList = searchResponse.getItems();
+    
+    System.out.println(searchResultList);
+    List<SearchResponse> response= new ArrayList<SearchResponse>();
+    
+    //Parse each item in list and store in object
+     for (SearchResult result:searchResultList) {
+    	String sr= result.toString();
+    	final ObjectMapper objectMapper = new ObjectMapper();
+    	SearchResponse s = objectMapper.readValue(sr, SearchResponse.class);
+    	response.add(s);
+    	
+    	
+     }
+    
+    //Parsing Json to objects attempts
+     //SearchResponse searchResults =rt.getForObject(uri,SearchResponse.class);
+    
+    /* final ObjectMapper objectMapper = new ObjectMapper();
+    SearchResponse[] sr = objectMapper.readValues(searchResultList, Class<SearchResponse[]>);
+     */
+    
+    //SearchResponse sr = .parseAs(SearchResponse.class);
+    
+     //return (searchResultList.iterator());
+     return response;
 	 }
      
      /*

@@ -17,7 +17,10 @@
 <h2>Video Results...Did you find what you were looking for?</h2>
 <div>   
         <c:forEach var="result" items= "${results }">
-        <p> ${result}</p>
+        <p> ${result.snippet.title}
+        ${result.id.videoId}
+        <img src="${result.snippet.thumbnails.dfault.url}">
+        </p>
         </c:forEach>
 </div>
 
