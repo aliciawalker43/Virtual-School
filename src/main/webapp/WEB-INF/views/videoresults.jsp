@@ -18,21 +18,23 @@
  
  <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
  <div id="player"></div>
- 
+ <br>
 <div>   
-      <form action="playvideo" id="play" method="post">
+      
+      
         <c:forEach var="result" items= "${results }">
-        <p> ${result.snippet.title}
-        ${result.id.videoId}
-        <img src="${result.snippet.thumbnails.dfault.url}">
-       <!-- <a href="/videoplay?id=${result.id.videoId}" >Play</a>-->
-        <button>Submit</button>
+        
+        
+        <img src="${result.snippet.thumbnails.dfault.url}"><br>
+        <p> ${result.snippet.title}<br>
+        <button onclick="playVideo('${result.id.videoId}')">Play</button>
+        
         </p>
         </c:forEach>
         </form>
 </div>
 
-<a href= "//">Return</a>
+<a href= "//">Return</a> 
 
   
 
@@ -50,20 +52,9 @@
 
       // 3. This function creates an <iframe> (and YouTube player)
       //    after the API code downloads.
-      var player;
+     
       function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-          height: '390',
-          width: '640',
-          videoId: 'M7lc1UVf-VE',
-          playerVars: {
-            'playsinline': 1
-          },
-          events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-          }
-        });
+       console.log("Youtube is ready!")
       }
 
       // 4. The API will call this function when the video player is ready.
@@ -83,6 +74,23 @@
       }
       function stopVideo() {
         player.stopVideo();
+      }
+      
+      var player;
+      function playVideo(vidId){
+    	  if(player){
+    		  player.destroy();
+    	  }
+    	  
+    	  player = new YT.Player('player', {
+              height: '390',
+              width: '640',
+              videoId: vidId ,
+              events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+              }
+            });
       }
     </script>
 
