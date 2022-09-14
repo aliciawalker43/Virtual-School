@@ -1,6 +1,7 @@
 package com.example.VirtualSchool;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.auth.oauth2.Credential;
 //import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
@@ -33,7 +34,15 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemListResponse;
+import com.google.common.collect.Lists;
 
 
 
@@ -51,39 +60,8 @@ public class YoutubeApiService {
 
 	  
      
-     private RestTemplate rt;// parse JSon data and store in object
-
-		// initialization block that runs when a new instance of the class is created
-		// loaded before the constructor
-		{
-			ClientHttpRequestInterceptor interceptor = (request, body, execution) -> {
-				request.getHeaders().add(HttpHeaders.USER_AGENT, "anything");
-				return execution.execute(request, body);
-			};
-			rt = new RestTemplateBuilder().additionalInterceptors(interceptor).build();
-		}
+     // Pull general search results from YouTube API
      
-     
-     
-	// private static YouTube youtube;
-
-	
-	
-	/* Properties properties = new Properties();
-	 
-     try {
-         InputStream in = Search.class.getResourceAsStream("/" + PROPERTIES_FILENAME);
-         properties.load(in);
-
-     } catch (IOException e) {
-         System.err.println("There was an error reading " + PROPERTIES_FILENAME + ": " + e.getCause()
-                 + " : " + e.getMessage());
-         System.exit(1);
-     }
-
-     */
-
-
 	 public List<SearchResponse> searchResults ( String QueryTerm) throws IOException {
     
 		 // This object is used to make YouTube Data API requests.
@@ -116,7 +94,7 @@ public class YoutubeApiService {
     SearchListResponse searchResponse = search.execute();
     List<SearchResult> searchResultList = searchResponse.getItems();
     
-    System.out.println(searchResultList);
+    //System.out.println(searchResultList);
     List<SearchResponse> response= new ArrayList<SearchResponse>();
     
     //Parse each item in list and store in object
@@ -126,35 +104,103 @@ public class YoutubeApiService {
     	SearchResponse s = objectMapper.readValue(sr, SearchResponse.class);
     	response.add(s);
     	
-    	
      }
-    
-    //Parsing Json to objects attempts
-     //SearchResponse searchResults =rt.getForObject(uri,SearchResponse.class);
-    
-    /* final ObjectMapper objectMapper = new ObjectMapper();
-    SearchResponse[] sr = objectMapper.readValues(searchResultList, Class<SearchResponse[]>);
-     */
-    
-    //SearchResponse sr = .parseAs(SearchResponse.class);
-    
-     //return (searchResultList.iterator());
-     return response;
+    return response;
 	 }
      
-     /*
-     if (searchResultList != null) {
-         prettyPrint(searchResultList.iterator(), queryTerm);
-     }
- } catch (GoogleJsonResponseException e) {
-     System.err.println("There was a service error: " + e.getDetails().getCode() + " : "
-             + e.getDetails().getMessage());
- } catch (IOException e) {
-     System.err.println("There was an IO error: " + e.getCause() + " : " + e.getMessage());
- } catch (Throwable t) {
-     t.printStackTrace();
- }
-     */
+	 
+	 
+	 //Call YouTube api for search results from specific user.
+	 
+	    
+	  public List<Channel> myChannel()  {
+	 // This OAuth 2.0 access scope allows for read-only access to the
+     // authenticated user's account, but not other types of account access.
+         List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube.readonly");
+
+         List<Channel> channelsList= null;
+         
+     try {
+         // Authorize the request.
+         Credential credential = Auth.authorize(scopes, "myuploads");
+	
+         // This object is used to make YouTube Data API requests.
+        YouTube youtube = new YouTube.Builder(Auth.HTTP_TRANSPORT, Auth.JSON_FACTORY, credential).setApplicationName("VirtualSchool").build();
+
+         // Call the API's channels.list method to retrieve the
+         // resource that represents the authenticated user's channel.
+         // In the API response, only include channel information needed for
+         // this use case. The channel's contentDetails part contains
+         // playlist IDs relevant to the channel, including the ID for the
+         // list that contains videos uploaded to the channel.
+         YouTube.Channels.List channelRequest = youtube.channels().list("contentDetails");
+         channelRequest.setMine(true);
+         channelRequest.setFields("items/contentDetails,nextPageToken,pageInfo");
+         ChannelListResponse channelResult = channelRequest.execute();
+
+          channelsList = channelResult.getItems();
+         System.out.println(channelsList);
+         
      
-}
+    	// return channelsList;
+     
+    	 
+     
+         
+         
+         /*if (channelsList != null) {
+             // The user's default channel is the first item in the list.
+             // Extract the playlist ID for the channel's videos from the
+             // API response.
+             String uploadPlaylistId =
+                     channelsList.get(0).getContentDetails().getRelatedPlaylists().getUploads();
+
+             // Define a list to store items in the list of uploaded videos.
+             List<PlaylistItem> playlistItemList = new ArrayList<PlaylistItem>();
+
+             // Retrieve the playlist of the channel's uploaded videos.
+             YouTube.PlaylistItems.List playlistItemRequest =
+                     youtube.playlistItems().list("id,contentDetails,snippet");
+             playlistItemRequest.setPlaylistId(uploadPlaylistId);
+
+             // Only retrieve data used in this application, thereby making
+             // the application more efficient. See:
+             // https://developers.google.com/youtube/v3/getting-started#partial
+             playlistItemRequest.setFields(
+                     "items(contentDetails/videoId,snippet/title,snippet/publishedAt),nextPageToken,pageInfo");
+
+             String nextToken = "";
+
+             // Call the API one or more times to retrieve all items in the
+             // list. As long as the API response returns a nextPageToken,
+             // there are still more items to retrieve.
+             do {
+                 playlistItemRequest.setPageToken(nextToken);
+                 PlaylistItemListResponse playlistItemResult = playlistItemRequest.execute();
+
+                 playlistItemList.addAll(playlistItemResult.getItems());
+
+                 nextToken = playlistItemResult.getNextPageToken();
+                 
+             } while (nextToken != null); 
+            
+             
+             // Prints information about the results.
+            // prettyPrint(playlistItemList.size(), playlistItemList.iterator());
+         }
+        */
+          }  catch (GoogleJsonResponseException e) {
+         e.printStackTrace();
+         System.err.println("There was a service error: " + e.getDetails().getCode() + " : "
+                 + e.getDetails().getMessage());
+
+    } catch (Throwable t) {
+         t.printStackTrace();
+     }return channelsList;
+     
+       
+     }
+   }  
+
+
 

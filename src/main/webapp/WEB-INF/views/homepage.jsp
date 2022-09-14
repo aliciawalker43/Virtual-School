@@ -18,9 +18,11 @@
 <h1>Welcome to Rach's Virtual Art School</h1>
 </div>
 
+<p class="message"><c:out value="${ message }"/></p>
+
 <div>Sign in Here<br>
-<form action="signin" method= "post">
-<input type="name" name= "name" placeholder= "email">
+<form action="login" method= "post">
+<input type="name" name= "username" placeholder= "email">
 <input type="password" name= "password">
 <button class="btn btn-outline-primary">Submit</button>
 </form>

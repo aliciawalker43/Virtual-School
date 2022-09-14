@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.SearchResult;
 
 
@@ -20,9 +21,11 @@ public class VSController {
 	
 	
 	@RequestMapping ("/")
-	public String showHome() {
+	public String showLanding() {
 		return "homepage";
 	}
+	
+	
 
 	@RequestMapping ("//")
 	public String showStudentHome() {
@@ -33,6 +36,16 @@ public class VSController {
 	public String searchVideos( Model model, String searchphrase) throws IOException {
 		
 		 List<SearchResponse> results= ys.searchResults(searchphrase);
+		
+		 model.addAttribute("results", results);
+		 //System.out.println(results.toString());
+		return "videoresults";
+	}
+	
+	@RequestMapping ("/myvideos")
+	public String myVideos( Model model) throws IOException {
+		
+		List<Channel> results= ys.myChannel();
 		
 		 model.addAttribute("results", results);
 		 //System.out.println(results.toString());

@@ -27,6 +27,10 @@
 </form>
 </div>
 <br>
+<div>
+<a href= "/myvideos">click for my videos</a>
+</div>
+<br>
 <a href= "logout">Logout</a>
 </body>
 </html>
