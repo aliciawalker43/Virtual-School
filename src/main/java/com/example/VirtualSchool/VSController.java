@@ -9,7 +9,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.google.api.services.youtube.model.Channel;
-import com.google.api.services.youtube.model.SearchResult;
 
 
 
@@ -45,9 +44,9 @@ public class VSController {
 	@RequestMapping ("/myvideos")
 	public String myVideos( Model model) throws IOException {
 		
-		List<Channel> results= ys.myChannel();
+		//List<Channel> results= ys.myChannel();
 		
-		 model.addAttribute("results", results);
+		// model.addAttribute("results", results);
 		 //System.out.println(results.toString());
 		return "videoresults";
 	}

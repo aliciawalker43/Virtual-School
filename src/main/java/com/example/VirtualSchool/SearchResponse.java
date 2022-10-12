@@ -2,8 +2,6 @@ package com.example.VirtualSchool;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import antlr.collections.List;
-
 public class SearchResponse {
 
 	

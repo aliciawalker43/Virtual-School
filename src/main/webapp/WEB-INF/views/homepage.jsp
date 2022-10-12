@@ -20,7 +20,8 @@
 
 <p class="message"><c:out value="${ message }"/></p>
 
-<div>Sign in Here<br>
+<!--<div><a href= "loging">Sign in here</a><br>-->
+
 <form action="login" method= "post">
 <input type="name" name= "username" placeholder= "email">
 <input type="password" name= "password">
@@ -28,8 +29,12 @@
 </form>
 </div>
 <br>
-<div> Not a Student? <br>
-Click link to <a href= "Signup">Signup</a>.
+<div> Not a Student yet? <br>
+Click link to <a href= "/signup">Signup</a>.
 </div>
+
+<!--<p> <a href=" "> Instructor Login</a></p>-->
+
+
 </body>
 </html>

@@ -1,6 +1,8 @@
 package com.example.VirtualSchool;
 
+import java.io.IOException;
 import java.util.Base64;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -12,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+
+
 
 @Controller
 public class UserController {
@@ -21,6 +27,9 @@ public class UserController {
 	
 	@Autowired
 	GoogleService googleService;
+	
+	@Autowired
+	private YoutubeApiService ys;
 	
 
 	@Autowired
@@ -35,10 +44,9 @@ public class UserController {
 	}
 	
 	@PostMapping("/signup")
-	public String submitSignup(User user,@RequestParam("passwordConfirm") String passwordConfirm, 
-			@RequestParam("passcode") String password,@RequestParam("firstname") String name1,
-			@RequestParam("lastname") String name2,
-			@RequestParam("email") String email,
+	public String submitSignup(User user,@RequestParam("confirmpassword") String passwordConfirm, 
+			@RequestParam("password") String password,
+			@RequestParam("name") String name,
 			@RequestParam("username") String username, Model model) {
 
 		User existingUser = userDao.findByUsername(username);
@@ -57,7 +65,7 @@ public class UserController {
 		if (passwordConfirm.contentEquals(password)) {
 
 		String encodePass = Base64.getEncoder().encodeToString(password.getBytes());
-		user.setPasscode(encodePass);
+		user.setPassword(encodePass);
 	
 	
 		userDao.save(user);
@@ -66,27 +74,14 @@ public class UserController {
 		model.addAttribute("message", "Thank You for Signing Up.");
 		
 		}
-		return "redirect:/index";
+		return "homepage";
 		
 	}
 
 	// LOGIN METHODS
 	
 
-	@PostMapping("/loging")
-	public String loginGoogle(RedirectAttributes redirect) {
-		session.invalidate();
-		redirect.addFlashAttribute("message", "Log in with Google.");
-		
-		return "redirect:/https://accounts.google.com/o/oauth2/v2/auth?\n" + 
-				" scope=https%3A//www.googleapis.com/auth/drive.metadata.readonly&\n" + 
-				" access_type=offline&\n" + 
-				" include_granted_scopes=true&\n" + 
-				" response_type=code&\n" + 
-				" state=state_parameter_passthrough_value&\n" + 
-				" redirect_uri=https%3A//oauth2.example.com/code&\n" + 
-				" client_id=client_id";
-	}
+	
 	
 	@PostMapping("/login")
 	public String submitLogin(@RequestParam("username") String username, @RequestParam("password") String password,
@@ -98,7 +93,7 @@ public class UserController {
 			model.addAttribute("message", "Incorrect username. Please try again.");
 			return "homelogin";
 		}
-		byte[] decodeByte = Base64.getDecoder().decode(user.getPasscode());
+		byte[] decodeByte = Base64.getDecoder().decode(user.getPassword());
 		String decodePass = new String(decodeByte);
        // check is password accurate
 		if (!password.contentEquals(decodePass)) {
@@ -160,28 +155,35 @@ public class UserController {
 
 }*/
 	
-	// This is the second step in OAuth. After the user approves the login on the github site, it redirects back
+	// This is the second step in OAuth. After the user approves the login on the google site, it redirects back
 		// to our site with a temporary code.
 		@RequestMapping("/oauth-google-callback")
-		public String handleGithubCallback(@RequestParam("code") String code, HttpSession session) {
-			// First we must exchange that code for an access token.
-			String accessToken = googleService.getGoogleAccessToken(code);
-			// Then we can use that access token to get information about the user and other things.
-			User githubUser = googleService.getUserFromGoogleApi(accessToken);
-
-			// Check to see if the user is already in our database.
-			User user = userDao.findByGithubId(googleUser.getGoogleId());
-			if (user == null) {
-				// if not, add them.
-				user = githubUser;
-				userDao.save(user);
-			}
-
+		public String handleGoogleCallback(@RequestParam("code") String code, HttpSession session) throws IOException {
+			//Get user from session
+			//User currentUser= (User)session.getAttribute("user");
+		   //	Long id =  currentUser.getId();
+			
+			
+			// exchange code for response object.
+			GoogleAccessTokenResponse response = googleService.getGoogleAccessToken(code);
+			System.out.println("response"+ response);
+			
+			
+			//store response as credential of current user
+			//currentUser.setCredential(response);
+			
+			//use credentials to call youtube api mychannel 
+			//System.out.println(ys.myChannel());
+			
+			
+			
+            /*
 			// Set the user on the session, just like the other type of login.
 			session.setAttribute("user", user);
-			// In some apps, you need the access token later, so throw that on the session, too.
+			
+			// token session- not using.
 			session.setAttribute("googleAccessToken", accessToken);
-
-			return "redirect:/";
+            */
+			return "videoresults";
 		}
 }

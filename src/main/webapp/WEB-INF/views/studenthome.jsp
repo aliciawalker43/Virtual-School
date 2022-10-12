@@ -28,7 +28,7 @@
 </div>
 <br>
 <div>
-<a href= "/myvideos">click for my videos</a>
+<a href= "http://accounts.google.com/o/oauth2/v2/auth?response_type=code&scope=https://www.googleapis.com/auth/youtube.readonly&access_type=offline&include_granted_scopes=true&state=state_parameter_passthrough_value&client_id=46984612081-k86779oo3t3rvfgbvinevi7tarcq1bjs.apps.googleusercontent.com&redirect_uri=http://localhost:8080/oauth-google-callback">For "My Video List" log in to Google</a>
 </div>
 <br>
 <a href= "logout">Logout</a>

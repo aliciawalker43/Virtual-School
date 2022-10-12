@@ -5,43 +5,21 @@ import com.google.api.client.auth.oauth2.Credential;
 //import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.ResourceId;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
-import com.google.api.services.youtube.model.Thumbnail;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
-
-import org.apache.http.auth.AUTH;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 
-import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelListResponse;
-import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.common.collect.Lists;
 
 
@@ -66,7 +44,8 @@ public class YoutubeApiService {
     
 		 // This object is used to make YouTube Data API requests.
     YouTube youtube = new YouTube.Builder(Auth.HTTP_TRANSPORT, Auth.JSON_FACTORY, new HttpRequestInitializer() {
-         public void initialize(HttpRequest request) throws IOException {
+         @Override
+		public void initialize(HttpRequest request) throws IOException {
          }
      }).setApplicationName("VirtualSchool").build();
      
@@ -110,20 +89,20 @@ public class YoutubeApiService {
      
 	 
 	 
-	 //Call YouTube api for search results from specific user.
+	 //Call YouTube Api for search results from specific user channel using credentials.
 	 
 	    
-	  public List<Channel> myChannel()  {
+	  public List<Channel> myChannel() throws IOException  {
 	 // This OAuth 2.0 access scope allows for read-only access to the
      // authenticated user's account, but not other types of account access.
          List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube.readonly");
-
-         List<Channel> channelsList= null;
+        
+        // List<Channel> channelsList= null;
          
-     try {
+     //try {
          // Authorize the request.
-         Credential credential = Auth.authorize(scopes, "myuploads");
-	
+        Credential credential = Auth.authorize(scopes, "myUploads");
+         
          // This object is used to make YouTube Data API requests.
         YouTube youtube = new YouTube.Builder(Auth.HTTP_TRANSPORT, Auth.JSON_FACTORY, credential).setApplicationName("VirtualSchool").build();
 
@@ -134,13 +113,16 @@ public class YoutubeApiService {
          // playlist IDs relevant to the channel, including the ID for the
          // list that contains videos uploaded to the channel.
          YouTube.Channels.List channelRequest = youtube.channels().list("contentDetails");
-         channelRequest.setMine(true);
+        channelRequest.setMine(true);
          channelRequest.setFields("items/contentDetails,nextPageToken,pageInfo");
          ChannelListResponse channelResult = channelRequest.execute();
 
-          channelsList = channelResult.getItems();
+          List <Channel> channelsList = channelResult.getItems();
          System.out.println(channelsList);
-         
+         return channelsList;
+      
+    	  
+       }
      
     	// return channelsList;
      
@@ -188,7 +170,7 @@ public class YoutubeApiService {
              // Prints information about the results.
             // prettyPrint(playlistItemList.size(), playlistItemList.iterator());
          }
-        */
+        
           }  catch (GoogleJsonResponseException e) {
          e.printStackTrace();
          System.err.println("There was a service error: " + e.getDetails().getCode() + " : "
@@ -196,11 +178,11 @@ public class YoutubeApiService {
 
     } catch (Throwable t) {
          t.printStackTrace();
-     }return channelsList;
+     }*/
      
        
      }
-   }  
+     
 
 
 
